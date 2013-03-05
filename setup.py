@@ -44,7 +44,7 @@ setup(
     url = "https://github.com/dmeliza/toelis",
 
     py_modules = ['toelis'],
-    requires = ["h5py (>=2.0)","numpy (>=1.3)"],
+    requires = ["numpy (>=1.3)"],
     )
 # Variables:
 # End:
