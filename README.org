@@ -17,19 +17,17 @@ and functions for reading and writing files in the toelis format.
 Toelis files must be ISO-8859-1 or UTF-8 text encoding, and must have the
 format specified by the following [[https://tools.ietf.org/html/rfc5234][ABNF]] grammar:
 
-#+begin_src text
-toelis-file   = num-channels NL num-trials NL *channel-index *channel
-num-channels  = *DIGIT
-num-reps      = *DIGIT
-channel-index = *DIGIT NL           ; starting line for each channel
-                                    ; number of channel-index items must equal num-channels
-channel       = event-counts events
-event-counts  = *(*DIGIT NL)        ; number of events in each repetition
-                                    ; number of event-count lines must equal num-reps
-events        = *(time NL)
-time          = [%x1D] *DIGIT [%x1E *DIGIT] ; floating point number
-NL            = CR / CRLF / LF      ; all file encodings accepted
-#+end_src
+: toelis-file   = num-channels NL num-trials NL *channel-index *channel
+: num-channels  = *DIGIT
+: num-reps      = *DIGIT
+: channel-index = *DIGIT NL           ; starting line for each channel
+:                                     ; number of channel-index items must equal num-channels
+: channel       = event-counts events
+: event-counts  = *(*DIGIT NL)        ; number of events in each repetition
+:                                    ; number of event-count lines must equal num-reps
+: events        = *(time NL)
+: time          = [%x1D] *DIGIT [%x1E *DIGIT] ; floating point number
+: NL            = CR / CRLF / LF      ; all file encodings accepted
 
 The =time= elements indicate a positive or temporal interval from an externally
 defined reference time (e.g., the onset of a stimulus), and should be in units
