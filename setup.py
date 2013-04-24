@@ -13,8 +13,6 @@ Development Status :: 5 - Production/Stable
 Intended Audience :: Science/Research
 License :: OSI Approved :: GNU General Public License (GPL)
 Programming Language :: Python
-Programming Language :: C++
-Programming Language :: MATLAB
 Topic :: Scientific/Engineering
 Operating System :: Unix
 Operating System :: POSIX :: Linux
