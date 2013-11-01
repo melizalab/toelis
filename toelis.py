@@ -57,18 +57,18 @@ class toefile(object):
             fp = open(self.filename, 'rU')
         else:
             fp = self.filename
-        n_units = int(fp.readline())
-        n_repeats = int(fp.readline())
+        n_units = int(float(fp.readline()))
+        n_repeats = int(float(fp.readline()))
         out = []
 
         # use this information to check for consistency
-        p_units = [int(fp.readline()) for i in range(n_units)]
+        p_units = [int(float(fp.readline())) for i in range(n_units)]
         pos = 2 + n_units + 1
 
         for unit in range(n_units):
             if pos != p_units[unit]:
                 raise IOError, "Corrupted header in %s: unit %d should start on %d" % (fp,unit,p_units[unit])
-            n_events = [int(fp.readline()) for i in range(n_repeats)]
+            n_events = [int(float(fp.readline())) for i in range(n_repeats)]
             events = toelis([float(fp.readline()) for j in range(n)] for n in n_events)
             out.append(events)
             pos += sum(n_events) + n_repeats
