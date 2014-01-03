@@ -6,7 +6,10 @@ from __future__ import unicode_literals
 
 from nose.tools import *
 
-import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 import toelis
 
 toe1 = """\
@@ -231,9 +234,9 @@ data2 = None
 
 def setup():
     global data1, data2
-    data1 = toelis.read(StringIO.StringIO(toe1))
+    data1 = toelis.read(StringIO(toe1))
     assert_equal(len(data1), 1, "Number of units")
-    data2 = toelis.read(StringIO.StringIO(toe2))
+    data2 = toelis.read(StringIO(toe2))
     assert_equal(len(data2), 1, "Number of units")
     data1, data2 = data1[0], data2[0]
     assert_equal(len(data1), 10)
@@ -270,10 +273,10 @@ def test_rasterize():
 
 def test_write():
     # because of precision issues, do a read/write
-    fp = StringIO.StringIO()
+    fp = StringIO()
     toelis.write(fp, data1)
 
-    fp2 = StringIO.StringIO(fp.getvalue())
+    fp2 = StringIO(fp.getvalue())
     d = toelis.read(fp2)
     assert_equal(len(d), 1)
     d = d[0]

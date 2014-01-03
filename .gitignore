@@ -3,3 +3,4 @@
 /dist/
 /examples/
 *.pyc
+/toelis.egg-info

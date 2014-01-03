@@ -138,7 +138,10 @@ def merge(x, y):
     >>> list(merge(tl1, tl2))
 
     """
-    from itertools import izip
+    try:
+        from itertools import izip
+    except ImportError:
+        izip = zip
     from numpy import concatenate
     return (concatenate((a, b)) for a, b in izip(x, y))
 
@@ -154,157 +157,6 @@ def rasterize(x):
         for v in y:
             yield i, v
 
-
-class toelis(list):
-    """
-    A toelis object represents a collection of events. Each event is simply a
-    scalar time offset. The events are organized hierarchically into 'trials';
-    for example, there may be events occurring in multiple independent channels,
-    or the events may be occur in response to multiple presentations of the same
-    stimulus.
-
-    This class derives from <list>, and the item access methods have been
-    overridden, where appropriate, to return new toelis objects, and convert
-    added data to the correct format. Each element of the list contains a 1D
-    numpy ndarray.
-
-    toelis():         initialize an empty object
-    toelis(iterable): create a new object from a list of event times
-
-    nevents:          total count of events
-    range:            min and max event across all trials
-    subrange():       return a new toelis with events restricted to a window
-    merge():          copy events from one object to this one
-    rasterize():      convert ragged array to x,y indices
-    """
-
-    def __init__(self, trials=None):
-        """
-        Constructs the toelis object.
-
-        toelis():         construct an empty object
-        toelis(iterable):
-
-        Intialize the object with data from iterable. Each element in iterable
-        must be a list of numeric values; these are converted to a numpy
-        ndarray. If the data are already in ndarrays, the copy is shallow and
-        any manipulations will affect the underlying data; the calling function
-        should explicitly copy the data to avoid this.
-        """
-        if trials is None:
-            list.__init__(self)
-        else:
-            list.__init__(self, (self._convert_data(x) for x in trials))
-
-    @staticmethod
-    def _convert_data(trial):
-        from numpy import array
-        d = array(trial, ndmin=1)
-        if d.ndim > 1:
-            raise ValueError("Input data must be 1-D")
-        return d
-
-    def __getslice__(self, *args):
-        return self.__class__(list.__getslice__(self, *args))
-
-    def __setslice__(self, start, stop, trials):
-        try:
-            list.__setslice__(self, start, stop,
-                              (self._convert_data(x, False) for x in trials))
-        except TypeError:
-            raise TypeError("can only assign an iterable")
-
-    def __setitem__(self, index, trial):
-        list.__setitem__(self, index, self._convert_data(trial, False))
-
-    def append(self, trial):
-        """Append new trial to end"""
-        list.append(self, self._convert_data(trial))
-
-    def extend(self, trials):
-        """Add each item in trials to the end of the toelis """
-        list.extend(self, (self._convert_data(x) for x in trials))
-
-    def insert(self, index, trial):
-        """Insert a new trial before index"""
-        list.insert(self, index, self._convert_data(trial))
-
-    def __add__(self, trials):
-        """ Add the trials in another object to this one. Shallow copy. """
-        from itertools import chain
-        return toelis(chain(self, trials))
-
-    def __repr__(self):
-        if len(self) < 100:
-            return "<%s %d trials, %d events>" % (self.__class__.__name__, len(self), self.nevents)
-        else:
-            return "<%s %d trials>" % (self.__class__.__name__,len(self))
-
-    def __str__(self):
-        return "[" + "\n ".join(tuple(trial).__repr__() for trial in self) + "]"
-
-    def offset(self, offset):
-        """ Adds a fixed offset to all the time values in the object.  """
-        from numpy import isscalar
-        if not isscalar(offset):
-            raise TypeError("can only add scalars to toelis events")
-        for trial in self:
-            trial += offset
-
-    @property
-    def nevents(self):
-        """ The total number of events in the object """
-
-    @property
-    def range(self):
-        """ The range of event times in the object """
-        if self.nevents==0: return None,None
-        mn,mx = zip(*((x.min(),x.max()) for x in self if x.size))
-        return (min(mn) or len(mn) and None,
-                max(mx) or len(mx) and None)
-
-    def subrange(self, onset=None, offset=None, adjust=False):
-        """
-        Returns a new toelis object only containing events between onset and
-        offset (inclusive). Default values are -Inf and +Inf.
-
-        If <adjust> is True, set times relative to onset
-        If <adjust> is a scalar, set times relative to <adjust>
-        Default is to leave the times alone
-        """
-        mintime,maxtime = self.range
-        if onset==None: onset = mintime
-        if offset==None: offset = maxtime
-        if adjust==True:
-            adjust = onset
-        elif adjust==False:
-            adjust = 0
-        return toelis([x[((x>=onset) & (x<=offset))] - adjust for x in self])
-
-    def merge(self, newlis, offset=0.0):
-        """
-        Merge two toelis objects by concatenating events in corresponding
-        repeats. For example, if tl1[0]= [1,2,3] and tl2[0]= [4,5,6], after
-        tl1.merge(tl2), tl1[0] = [1,2,3,4,5,6]. The events are NOT sorted.
-
-        <offset> is added to all events in newlis
-        """
-        from numpy import concatenate
-        if not len(self)==len(newlis):
-            raise ValueError("Number of trials must match")
-        for i,trial in enumerate(self):
-            self[i] = concatenate([trial, newlis[i] + offset])
-
-    def rasterize(self):
-        """
-        Rasterizes the data as a collection of x,y points, with the x position
-        determined by the event time and the y position determined by the trial
-        index. Returns a tuple of arrays, (x,y)
-        """
-        from numpy import concatenate, ones
-        y = concatenate([ones(unit.size, dtype='i') * i for i, unit in enumerate(self)])
-        x = concatenate(self)
-        return (x, y)
 
 # Variables:
 # End:
