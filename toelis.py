@@ -1,120 +1,158 @@
 # -*- coding: utf-8 -*-
 # -*- mode: python -*-
-"""
-Read and write event-time data in "toelis" format.
+"""Read, write, and process time-of-event data.
 
-Classes
-====================
-toefile:   read and write data in toe_lis format
-toelis:    class for representing time of event data
+The functions in this module work with time-of-event data represented as ragged
+arrays, which are sequences of arrays of event times. Each component array in
+the ragged array corresponds to a different onset time, experimental condition,
+etc.
+
+This module takes a dynamic, functional approach; functions do not modify their
+arguments and are fairly generic. Some functions may require the component
+arrays to support broadcasting. Functions return generators when possible.
 
 File format originally developed by Amish Dave.
 Copyright (C) Dan Meliza, 2006-2013 (dmeliza@uchicago.edu)
 Licensed for use under GNU Public License v2.0
+
 """
-import numpy as nx
-import os
 
-__version__ = "1.0.0"
+__version__ = "2.0.0-SNAPSHOT"
 
-class toefile(object):
+# format:
+# line 1 - number of units (nunits)
+# line 2 - total number of repeats per unit (nreps)
+# line 3:(3+nunits) - starting lines for each unit, i.e. pointers
+# to locations in the file where unit data is. Advance to that line
+# and scan in nreps lines, which give the number of events per repeat.
+
+
+def read(fp):
+    """Parses fp (a file object) as a toe_lis file and returns a tuple of ragged
+    arrays, one for each element in the file.
+
     """
-    Access toe_lis files. These are flat ASCII-encoded files that can store toe
-    data for multiple units and multiple epochs. The files are typically small
-    enough that they can be read into memory immediately, so the class only
-    defines two methods:
+    from numpy import fromiter
+    try:
+        from __builtin__ import range
+    except ImportError:
+        from builtins import range
 
-    read():        read toe data
-    write(data):   write data to toe_lis file
+    out = []
+    # all lines are parsed as floats first because some very old toelis
+    # files have counts stored as floats
+    lines = (float(l) for l in fp)
+    n_units = int(next(lines))
+    n_repeats = int(next(lines))
+
+    # use this information to check for consistency
+    p_units = fromiter(lines, 'i', n_units)
+    pos = 2 + n_units + 1
+
+    for unit in range(n_units):
+        if pos != p_units[unit]:
+            raise IOError("Corrupted header in %s: unit %d should start on %d" %
+                          (file, unit, p_units[unit]))
+        n_events = fromiter(lines, 'i', n_repeats)
+        events = [fromiter(lines, 'd', n) for n in n_events]
+        out.append(events)
+        pos += sum(n_events) + n_repeats
+
+    return tuple(out)
+
+
+def write(fp, *data):
+    """Writes time of event data to fp (a file object) in toe_lis format.
+
+    The data arguments must each be a ragged array containing event times. The
+    data can be in any format, as long as it can be iterated (and support
+    __len__) at two levels, and the returned values are numeric. Multiple
+    objects can be supplied on the command line, each of which is treated as a
+    different 'unit' in the toe_lis file; however, each object must have the
+    same number of trials.
+
     """
+    from itertools import chain
+    output = []
+    header = []
+    ntrials = None
 
-    format_doc = """
-        # line 1 - number of units (nunits)
-        # line 2 - total number of repeats per unit (nreps)
-        # line 3:(3+nunits) - starting lines for each unit, i.e. pointers
-        # to locations in the file where unit data is. Advance to that line
-        # and scan in nreps lines, which give the number of events per repeat.
-        """
+    header.append(len(data))  # number of units
 
-    def __init__(self, filename, *args, **kwargs):
-        self.filename = filename
-        self.timestamp = None
+    ptr = 3 + len(data)       # first data entry
+    for unit in data:
+        if ntrials is None:
+            ntrials = len(unit)
+            header.append(ntrials)
+        elif ntrials != len(unit):
+            raise ValueError("Each unit must have the same number of repeats")
+        header.append(ptr + len(output))
+        output.extend(len(trial) for trial in unit)
+        for trial in unit:
+            output.extend(trial)
 
-    def __enter__(self):
-        return self
+    for val in chain(header,output):
+        fp.write("%r\n" % val)
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
-        return exc_val
 
-    def read(self):
-        """
-        Read a toe_lis file. Returns a tuple of toelis objects, one for every
-        unit in the file. A brief documentation of the file format can be found
-        in the format_doc property.
-        """
-        if isinstance(self.filename, basestring):
-            fp = open(self.filename, 'rU')
-        else:
-            fp = self.filename
-        n_units = int(fp.readline())
-        n_repeats = int(fp.readline())
-        out = []
+def count(x):
+    """Returns the number of events in a ragged array x"""
+    return sum(len(y) for y in x)
 
-        # use this information to check for consistency
-        p_units = [int(fp.readline()) for i in range(n_units)]
-        pos = 2 + n_units + 1
 
-        for unit in range(n_units):
-            if pos != p_units[unit]:
-                raise IOError, "Corrupted header in %s: unit %d should start on %d" % (fp,unit,p_units[unit])
-            n_events = [int(fp.readline()) for i in range(n_repeats)]
-            events = toelis([float(fp.readline()) for j in range(n)] for n in n_events)
-            out.append(events)
-            pos += sum(n_events) + n_repeats
+def range(x):
+    """Returns the minimum and maximum values in a ragged array y. If the number
+    of events is zero, returns (None, None)
 
-        fp.close()
-        return tuple(out)
+    """
+    try:
+        return (min(min(y) for y in x), max(max(y) for y in x))
+    except ValueError:
+        return (None, None)
 
-    def write(self, *data):
-        """
-        Writes time of event data to a toe_lis file. The basic data type is a
-        ragged array, each element of which contains a list of event times. The
-        data can be in any format, as long as it can be iterated (and support
-        __len__) at two levels, and the returned values are numeric. Multiple
-        objects can be supplied on the command line, each of which is treated as
-        a different 'unit' in the toe_lis file; however, each object must have
-        the same number of trials.
-        """
-        from itertools import chain
-        output = []
-        header = []
-        ntrials = [len(unit) for unit in data]
-        for nt in ntrials:
-            if not nt==ntrials[0]: raise ValueError, "Each object must have the same length for toe_lis file"
-        header.append(len(data))  # number of units
-        header.append(ntrials[0]) # number of trials
 
-        ptr = 3 + len(data)       # first data entry
-        for unit in data:
-            header.append(ptr + len(output))
-            output.extend(len(trial) for trial in unit)
-            for trial in unit: output.extend(trial)
+def offset(x, val):
+    """Returns a lazy copy of x with val subtracted from every value.
 
-        if isinstance(self.filename,basestring):
-            fp = open(self.filename,'wt')
-        else:
-            fp = self.filename
-        try:
-            for val in chain(header,output):
-                fp.write("%r\n" % val)
-        finally:
-            if isinstance(self.filename,basestring): fp.close()
+    Component arrays must support broadcasting.
 
-    def close(self):
-        """ Set the timestamp of the file (the handle is only opened transiently) """
-        if self.timestamp is not None:
-            os.utime(self.filename, (self.timestamp, self.timestamp))
+    """
+    return (y - val for y in x)
+
+
+def subrange(x, onset=None, offset=None):
+    """Returns a lazy copy of x with values between onset and offset (inclusive).
+
+    Component arrays must support broadcasting.
+
+    """
+    return (y[(y >= onset) & ~(y > (offset))] for y in x)
+
+
+def merge(x, y):
+    """Returns a new lazy ragged array with events in corresponding
+    elements of x and y merged. Returned arrays are not sorted.
+
+    >>> tl1 = [[1,2,3]]
+    >>> tl2 = [[4,5,6], [7,8,9]]
+    >>> list(merge(tl1, tl2))
+
+    """
+    from itertools import izip
+    from numpy import concatenate
+    return (concatenate((a, b)) for a, b in izip(x, y))
+
+
+def rasterize(x):
+    """Rasterize the ragged array x as a lazy sequence of (x, y)
+
+    The y values of each tuple are the values in the arrays, and the x values
+    are the index of the array.
+
+    """
+    for i, y in enumerate(x):
+        for v in y:
+            yield i, v
 
 
 class toelis(list):
@@ -160,8 +198,10 @@ class toelis(list):
 
     @staticmethod
     def _convert_data(trial):
-        d = nx.array(trial, ndmin=1)
-        if d.ndim > 1: raise ValueError, "Input data must be 1-D"
+        from numpy import array
+        d = array(trial, ndmin=1)
+        if d.ndim > 1:
+            raise ValueError("Input data must be 1-D")
         return d
 
     def __getslice__(self, *args):
@@ -172,7 +212,7 @@ class toelis(list):
             list.__setslice__(self, start, stop,
                               (self._convert_data(x, False) for x in trials))
         except TypeError:
-            raise TypeError, "can only assign an iterable"
+            raise TypeError("can only assign an iterable")
 
     def __setitem__(self, index, trial):
         list.__setitem__(self, index, self._convert_data(trial, False))
@@ -194,12 +234,9 @@ class toelis(list):
         from itertools import chain
         return toelis(chain(self, trials))
 
-    def sort(self, indices):
-        raise NotImplementedError, "Sorting toelis objects not supported"
-
     def __repr__(self):
         if len(self) < 100:
-            return "<%s %d trials, %d events>" % (self.__class__.__name__,len(self),self.nevents)
+            return "<%s %d trials, %d events>" % (self.__class__.__name__, len(self), self.nevents)
         else:
             return "<%s %d trials>" % (self.__class__.__name__,len(self))
 
@@ -208,15 +245,15 @@ class toelis(list):
 
     def offset(self, offset):
         """ Adds a fixed offset to all the time values in the object.  """
-        if not nx.isscalar(offset):
-            raise TypeError, " can only add scalars to toelis events"
+        from numpy import isscalar
+        if not isscalar(offset):
+            raise TypeError("can only add scalars to toelis events")
         for trial in self:
             trial += offset
 
     @property
     def nevents(self):
         """ The total number of events in the object """
-        return sum(x.size for x in self)
 
     @property
     def range(self):
@@ -252,10 +289,11 @@ class toelis(list):
 
         <offset> is added to all events in newlis
         """
+        from numpy import concatenate
         if not len(self)==len(newlis):
-            raise ValueError, "Number of trials must match"
+            raise ValueError("Number of trials must match")
         for i,trial in enumerate(self):
-            self[i] = nx.concatenate([trial, newlis[i] + offset])
+            self[i] = concatenate([trial, newlis[i] + offset])
 
     def rasterize(self):
         """
@@ -263,9 +301,10 @@ class toelis(list):
         determined by the event time and the y position determined by the trial
         index. Returns a tuple of arrays, (x,y)
         """
-        y = nx.concatenate([nx.ones(unit.size,dtype='i') * i for i,unit in enumerate(self)])
-        x = nx.concatenate(self)
-        return x,y
+        from numpy import concatenate, ones
+        y = concatenate([ones(unit.size, dtype='i') * i for i, unit in enumerate(self)])
+        x = concatenate(self)
+        return (x, y)
 
 # Variables:
 # End:

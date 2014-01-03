@@ -1,7 +1,13 @@
 # -*- coding: utf-8 -*-
 # -*- mode: python -*-
-import toelis
+
+from __future__ import division
+from __future__ import unicode_literals
+
+from nose.tools import *
+
 import StringIO
+import toelis
 
 toe1 = """\
 1
@@ -219,61 +225,65 @@ toe2 = """\
 11242.2001953
 """
 
-def compare_arrays(a,b,msg):
-    from numpy import all
-    a,b = a.squeeze(),b.squeeze()
-    assert a.shape==b.shape, "%s: shape %s, expected %s" % (msg, a.shape, b.shape)
-    assert all(a==b), "%s: arrays unequal" % msg
+data1 = None
+data2 = None
 
-def compare_values(a,b,msg):
-    from numpy import asarray
-    from nose.tools import assert_almost_equal
-    if isinstance(b,(float)):
-        assert_almost_equal(a,b,places=5,msg="%s = %.6f, expected %.6f" % (msg, a, b))
-    elif hasattr(a,'__iter__') or hasattr(b,'__iter__'):
-        compare_arrays(asarray(a),asarray(b),msg)
-    else:
-        assert a == b, "%s = %s, expected %s" % (msg, a, b)
 
-def compare_toelis(tl1,tl2,f):
-    compare_values(len(tl2), len(tl1),"Number of units in %s" % f)
-    for i,u1 in enumerate(tl1):
-        u2 = tl2[i]
-        compare_values(len(u2),len(u1),"Number of repeats in %s/%d" % (f,i))
-        compare_values(u2.nevents,u1.nevents,"Number of events in %s/%d" % (f,i))
-        compare_values(u2.range[0],u1.range[0],"Minimum time in %s/%d" % (f,i))
-        compare_values(u2.range[1],u1.range[1],"Maximum time in %s/%d" % (f,i))
-        for j,trial in enumerate(u1):
-            compare_arrays(trial,u2[j],"Event data in %s/%d/%d" % (f,i,j))
-
-def test01_read():
+def setup():
     global data1, data2
-    fp = StringIO.StringIO(toe1)
-    data1 = toelis.toefile(fp).read()
-    compare_values(len(data1), 1, "Number of units in toe file")
-    compare_values(repr(data1[0]), '<toelis 10 trials, 86 events>', "Number of repeats/events in the toe file")
+    data1 = toelis.read(StringIO.StringIO(toe1))
+    assert_equal(len(data1), 1, "Number of units")
+    data2 = toelis.read(StringIO.StringIO(toe2))
+    assert_equal(len(data2), 1, "Number of units")
+    data1, data2 = data1[0], data2[0]
+    assert_equal(len(data1), 10)
+    assert_equal(len(data2), 10)
 
-    fp = StringIO.StringIO(toe2)
-    data2 = toelis.toefile(fp).read()
-    compare_values(len(data2), 1, "Number of units in toe file")
-    compare_values(repr(data2[0]), '<toelis 10 trials, 98 events>', "Number of repeats/events in the toe file")
 
-def test02_write():
+def test_count():
+    assert_equal(toelis.count(data1), 86, "Number of events")
+    assert_equal(toelis.count(data2), 98, "Number of events")
+    assert_equal(toelis.count(data1 + data2), 86 + 98)
+
+
+def test_range():
+    assert_equal(toelis.range(data1), (-1813.94999695, 12782.9501953))
+    assert_equal(toelis.range(data2), (-977.15002441399997, 11242.2001953))
+    assert_equal(toelis.range(data1 + data2), (-1813.94999695, 12782.9501953))
+
+
+def test_offset():
+    assert_equal(toelis.range(list(toelis.offset(data1, 1000))),
+                 (-2813.9499969500002, 11782.9501953))
+
+def test_merge():
+    merged = list(toelis.merge(data1, data2))
+    assert_equal(toelis.count(merged), toelis.count(data1) + toelis.count(data2))
+    assert_equal(toelis.range(merged), (-1813.94999695, 12782.9501953))
+
+
+def test_rasterize():
+    xy = list(toelis.rasterize(data1))
+    assert_equal(len(xy), toelis.count(data1))
+    assert_equal(max(x[0] for x in xy), len(data1) - 1)
+
+
+def test_write():
     # because of precision issues, do a read/write
-    global data1
     fp = StringIO.StringIO()
-    toelis.toefile(fp).write(*data1)
+    toelis.write(fp, data1)
 
     fp2 = StringIO.StringIO(fp.getvalue())
-    d = toelis.toefile(fp2).read()
-    compare_toelis(d,data1,"Copied toelis")
-
-def test03_extend():
-    global data1, data2
-    data1[0].extend(data2[0])
-    compare_values(len(data1), 1, "Number of units in toe file")
-    compare_values(repr(data1[0]), '<toelis 20 trials, 184 events>', "Number of repeats/events in the toe file")
+    d = toelis.read(fp2)
+    assert_equal(len(d), 1)
+    d = d[0]
+    assert_equal(len(d), len(data1))
+    assert_equal(toelis.count(d), toelis.count(data1))
+    assert_equal(toelis.range(d), toelis.range(data1))
+    assert_true(all(all(x == y) for x, y in zip(d, data1)))
 
 
 # Variables:
 # End:
+
+
