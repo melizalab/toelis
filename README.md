@@ -7,7 +7,7 @@ for storing toelis data in plain text files (original developed by Amish Dave),
 and (2) contains a Python module with data structures for storing toelis data
 and functions for reading and writing files in the toelis format.
 
-# toelis files
+## toelis files
 
 Toelis files must be ISO-8859-1 or UTF-8 text encoding, and must have the
 format specified by the following [ABNF](https://tools.ietf.org/html/rfc5234) grammar:
@@ -38,7 +38,7 @@ begins with a series of integers giving the number of events in each
 trial, followed by a series of floating point numbers giving the time of
 the events.  All channels must have the same number of trials.
 
-# python module
+## python module
 
 The toelis module requires Python 2.6+ or 3.2+ and numpy 1.3+. To install:
 
@@ -69,7 +69,7 @@ with open('merged.toe_lis', 'wt') as fp:
     tl.write(fp, tl.subrange(t_merge, 0, 1000))
 ```
 
-# acknowledgments and license
+## acknowledgments and license
 
 The toelis format was originally developed by Amish Dave (<http://amishdave.net>)
 for Dan Margoliash's lab at the University of Chicago
@@ -85,3 +85,5 @@ License for more details.
 
 You should have received a copy of the GNU General Public License along with
 this program; if not, see <http://www.gnu.org/licenses>.
+
+[![Build Status](https://travis-ci.org/melizalab/toelis.png?branch=develop)](https://travis-ci.org/melizalab/toelis)
