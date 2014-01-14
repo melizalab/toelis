@@ -49,11 +49,10 @@ setup(
     author_email = '"dan" at the domain "meliza.org"',
     maintainer = 'Dan Meliza',
     maintainer_email = '"dan" at the domain "meliza.org"',
-    url = "https://github.com/dmeliza/toelis",
-    download_url="https://github.com/melizalab/arf/downloads",
+    url = "https://github.com/melizalab/toelis",
+    download_url="https://github.com/melizalab/toelis/downloads",
 
     py_modules = ['toelis'],
-    requires = ["numpy (>=1.3)"],
     test_suite='nose.collector'
     )
 # Variables:
