@@ -14,7 +14,7 @@ except ImportError:
 
 # --- Distutils setup and metadata --------------------------------------------
 
-VERSION = '2.0.0-SNAPSHOT'
+VERSION = '2.0.0'
 
 cls_txt = \
 """

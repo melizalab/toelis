@@ -17,7 +17,7 @@ Licensed for use under GNU Public License v2.0
 
 """
 
-__version__ = "2.0.0-SNAPSHOT"
+__version__ = "2.0.0"
 
 # format:
 # line 1 - number of units (nunits)
