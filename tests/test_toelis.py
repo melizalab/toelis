@@ -5,6 +5,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from nose.tools import *
+from quantities import millisecond
 
 try:
     from StringIO import StringIO
@@ -256,7 +257,7 @@ def test_range():
 
 
 def test_offset():
-    assert_equal(toelis.range(list(toelis.offset(data1, 1000))),
+    assert_equal(toelis.range(list(toelis.offset(data1, 1000 * millisecond))),
                  (-2813.9499969500002, 11782.9501953))
 
 def test_merge():
@@ -288,5 +289,3 @@ def test_write():
 
 # Variables:
 # End:
-
-

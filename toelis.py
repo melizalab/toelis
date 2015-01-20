@@ -55,8 +55,8 @@ def read(fp):
             raise IOError("Corrupted header in %s: unit %d should start on %d" %
                           (file, unit, p_units[unit]))
         n_events = fromiter(lines, 'i', n_repeats)
-        events = [fromiter(lines, 'd', n) for n in n_events]
-        out.append(events * millisecond)
+        events = [fromiter(lines, 'd', n) * millisecond for n in n_events]
+        out.append(events)
         pos += sum(n_events) + n_repeats
 
     return tuple(out)
