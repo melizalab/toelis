@@ -17,7 +17,7 @@ Licensed for use under GNU Public License v2.0
 
 """
 
-__version__ = "2.0.0"
+__version__ = "2.1.0"
 
 # format:
 # line 1 - number of units (nunits)
@@ -33,6 +33,7 @@ def read(fp):
 
     """
     from numpy import fromiter
+    from quantities import millisecond
     try:
         from __builtin__ import range
     except ImportError:
@@ -55,7 +56,7 @@ def read(fp):
                           (file, unit, p_units[unit]))
         n_events = fromiter(lines, 'i', n_repeats)
         events = [fromiter(lines, 'd', n) for n in n_events]
-        out.append(events)
+        out.append(events * millisecond)
         pos += sum(n_events) + n_repeats
 
     return tuple(out)
@@ -71,7 +72,10 @@ def write(fp, *data):
     different 'unit' in the toe_lis file; however, each object must have the
     same number of trials.
 
+    If data do not have units, event times are assumed to be in units of milliseconds.
+
     """
+    from numpy import asarray
     from itertools import chain
     output = []
     header = []
@@ -89,6 +93,8 @@ def write(fp, *data):
         header.append(ptr + len(output))
         output.extend(len(trial) for trial in unit)
         for trial in unit:
+            if hasattr(trial, "units"):
+                trial = asarray(trial.rescale("ms"))
             output.extend(trial)
 
     for val in chain(header,output):
