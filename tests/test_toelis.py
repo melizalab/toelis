@@ -8,7 +8,7 @@ from nose.tools import *
 from quantities import millisecond
 
 try:
-    from cStringIO import StringIO
+    from StringIO import StringIO
 except ImportError:
     from io import StringIO
 import toelis
