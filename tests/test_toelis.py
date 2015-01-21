@@ -8,7 +8,7 @@ from nose.tools import *
 from quantities import millisecond
 
 try:
-    from StringIO import StringIO
+    from cStringIO import StringIO
 except ImportError:
     from io import StringIO
 import toelis
@@ -297,7 +297,7 @@ def test_units():
 
     # write data with non-standard units
     fp = StringIO()
-    toelis.write(fp, tuple(trial.rescale("s") for trial in data))
+    toelis.write(fp, tuple(trial.rescale("s") for trial in data), format="%.8f")
     fp2 = StringIO(fp.getvalue())
     d = toelis.read(fp2, units=pq.millisecond)[0]
     assert_unit_equal(d, data)

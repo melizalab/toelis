@@ -70,7 +70,7 @@ def read(fp, units=None):
     return tuple(out)
 
 
-def write(fp, *data):
+def write(fp, *data, **kwargs):
     """Writes time of event data to fp (a file object) in toe_lis format.
 
     The data arguments must each be a ragged array containing event times. The
@@ -84,12 +84,16 @@ def write(fp, *data):
     for toelis files); if data are dimensionless, times are assumed to be
     milliseconds.
 
+    Optional arguments:
+    format: set format for event times. By default '%r' (full precision)
+
     """
     from numpy import asarray
     from itertools import chain
     output = []
     header = []
     ntrials = None
+    fmt = kwargs.get("format", "%r") + "\n"
 
     header.append(len(data))  # number of units
 
@@ -101,14 +105,16 @@ def write(fp, *data):
         elif ntrials != len(unit):
             raise ValueError("Each unit must have the same number of repeats")
         header.append(ptr + len(output))
-        output.extend(len(trial) for trial in unit)
+        output.extend("%d\n" % len(trial) for trial in unit)
         for trial in unit:
             if hasattr(trial, "units"):
                 trial = asarray(trial.rescale("ms"))
-            output.extend(trial)
+            output.extend(fmt % e for e in trial)
 
-    for val in chain(header,output):
-        fp.write("%r\n" % val)
+    for val in header:
+        fp.write("%d\n" % val)
+    fp.writelines(output)
+
 
 
 def count(x):
