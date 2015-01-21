@@ -27,9 +27,13 @@ __version__ = "2.1.0"
 # and scan in nreps lines, which give the number of events per repeat.
 
 
-def read(fp):
+def read(fp, units=None):
     """Parses fp (a file object) as a toe_lis file and returns a tuple of ragged
     arrays, one for each element in the file.
+
+    units - if not None (the default), sets the physical units of the event
+    times. Most toelis files have units of milliseconds, but this is not set to
+    retain backwards compatibility.
 
     """
     from numpy import fromiter
@@ -55,7 +59,11 @@ def read(fp):
             raise IOError("Corrupted header in %s: unit %d should start on %d" %
                           (file, unit, p_units[unit]))
         n_events = fromiter(lines, 'i', n_repeats)
-        events = [fromiter(lines, 'd', n) * millisecond for n in n_events]
+        if units is not None:
+            events = [fromiter(lines, 'd', n) * units for n in n_events]
+        else:
+            events = [fromiter(lines, 'd', n) for n in n_events]
+
         out.append(events)
         pos += sum(n_events) + n_repeats
 
@@ -72,7 +80,9 @@ def write(fp, *data):
     different 'unit' in the toe_lis file; however, each object must have the
     same number of trials.
 
-    If data do not have units, event times are assumed to be in units of milliseconds.
+    If data have units, event times are rescaled to milliseconds (the standard
+    for toelis files); if data are dimensionless, times are assumed to be
+    milliseconds.
 
     """
     from numpy import asarray

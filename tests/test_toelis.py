@@ -257,7 +257,7 @@ def test_range():
 
 
 def test_offset():
-    assert_equal(toelis.range(list(toelis.offset(data1, 1000 * millisecond))),
+    assert_equal(toelis.range(list(toelis.offset(data1, 1000))),
                  (-2813.9499969500002, 11782.9501953))
 
 def test_merge():
@@ -272,6 +272,13 @@ def test_rasterize():
     assert_equal(max(x[0] for x in xy), len(data1) - 1)
 
 
+def assert_unit_equal(d1, d2):
+    assert_equal(len(d1), len(d2), "number of trials")
+    assert_equal(toelis.count(d1), toelis.count(d2), "number of events")
+    assert_equal(toelis.range(d1), toelis.range(d2), "range of event times")
+    assert_true(all(all(x == y) for x, y in zip(d1, d1)), "event values")
+
+
 def test_write():
     # because of precision issues, do a read/write
     fp = StringIO()
@@ -280,11 +287,20 @@ def test_write():
     fp2 = StringIO(fp.getvalue())
     d = toelis.read(fp2)
     assert_equal(len(d), 1)
-    d = d[0]
-    assert_equal(len(d), len(data1))
-    assert_equal(toelis.count(d), toelis.count(data1))
-    assert_equal(toelis.range(d), toelis.range(data1))
-    assert_true(all(all(x == y) for x, y in zip(d, data1)))
+    assert_unit_equal(d[0], data1)
+
+def test_units():
+    import quantities as pq
+    data = toelis.read(StringIO(toe1), units=pq.millisecond)[0]
+    assert_equal(len(data), 10, "Number of repeats")
+    assert_equal(data[0].units, pq.millisecond)
+
+    # write data with non-standard units
+    fp = StringIO()
+    toelis.write(fp, tuple(trial.rescale("s") for trial in data))
+    fp2 = StringIO(fp.getvalue())
+    d = toelis.read(fp2, units=pq.millisecond)[0]
+    assert_unit_equal(d, data)
 
 
 # Variables:
