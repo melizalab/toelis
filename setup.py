@@ -16,8 +16,7 @@ except ImportError:
 
 VERSION = '2.0.0'
 
-cls_txt = \
-"""
+cls_txt = """
 Development Status :: 5 - Production/Stable
 Intended Audience :: Science/Research
 License :: OSI Approved :: GNU General Public License (GPL)
@@ -40,19 +39,18 @@ units.
 """
 
 setup(
-    name = 'toelis',
-    version = VERSION,
-    description = short_desc,
-    long_description = long_desc,
-    classifiers = [x for x in cls_txt.split("\n") if x],
-    author = 'Dan Meliza',
-    author_email = '"dan" at the domain "meliza.org"',
-    maintainer = 'Dan Meliza',
-    maintainer_email = '"dan" at the domain "meliza.org"',
-    url = "https://github.com/melizalab/toelis",
-    download_url="https://github.com/melizalab/toelis/downloads",
+    name='toelis',
+    version=VERSION,
+    description=short_desc,
+    long_description=long_desc,
+    classifiers=[x for x in cls_txt.split("\n") if x],
+    author='Dan Meliza',
+    maintainer='Dan Meliza',
+    url="https://github.com/melizalab/toelis",
+    download_url="https://github.com/melizalab/toelis/archive/%s.tar.gz" % VERSION,
 
-    py_modules = ['toelis'],
+    install_requires=["numpy>=1.8"],
+    py_modules=['toelis'],
     test_suite='nose.collector'
     )
 # Variables:
