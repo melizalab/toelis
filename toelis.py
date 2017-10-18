@@ -17,7 +17,7 @@ Licensed for use under GNU Public License v2.0
 
 """
 
-__version__ = "2.0.0"
+__version__ = "2.0.1"
 
 # format:
 # line 1 - number of units (nunits)
@@ -129,21 +129,21 @@ def subrange(x, onset=None, offset=None):
     return (y[(y >= onset) & ~(y > (offset))] for y in x)
 
 
-def merge(x, y):
+def merge(*x):
     """Returns a new lazy ragged array with events in corresponding
     elements of x and y merged. Returned arrays are not sorted.
 
-    >>> tl1 = [[1,2,3]]
-    >>> tl2 = [[4,5,6], [7,8,9]]
-    >>> list(merge(tl1, tl2))
+    >>> a = [[4,5,6], [7,8,9]]
+    >>> b = [[1,2,3]]
+    >>> list(merge(a, b)) -> [array([4, 5, 6, 1, 2, 3]), array([7, 8, 9])]
 
     """
     try:
-        from itertools import izip
+        from itertools import izip_longest as zip_longest
     except ImportError:
-        izip = zip
+        from itertools import zip_longest
     from numpy import concatenate
-    return (concatenate((a, b)) for a, b in izip(x, y))
+    return (concatenate(y) for y in zip_longest(*x, fillvalue=[]))
 
 
 def rasterize(x):

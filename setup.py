@@ -14,7 +14,7 @@ except ImportError:
 
 # --- Distutils setup and metadata --------------------------------------------
 
-VERSION = '2.0.0'
+from toelis import __version__
 
 cls_txt = """
 Development Status :: 5 - Production/Stable
@@ -40,18 +40,16 @@ units.
 
 setup(
     name='toelis',
-    version=VERSION,
+    version=__version__,
     description=short_desc,
     long_description=long_desc,
     classifiers=[x for x in cls_txt.split("\n") if x],
     author='Dan Meliza',
     maintainer='Dan Meliza',
     url="https://github.com/melizalab/toelis",
-    download_url="https://github.com/melizalab/toelis/archive/%s.tar.gz" % VERSION,
 
     install_requires=["numpy>=1.8"],
     py_modules=['toelis'],
-    test_suite='nose.collector'
-    )
+    test_suite='nose.collector')
 # Variables:
 # End:

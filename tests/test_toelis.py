@@ -265,6 +265,14 @@ def test_merge():
     assert_equal(toelis.range(merged), (-1813.94999695, 12782.9501953))
 
 
+def test_merge_unequal_length():
+    a = [[4,5,6], [7,8,9]]
+    b = [[1,2,3]]
+    merged = list(toelis.merge(a, b))
+    assert_true(all(merged[0] == [4, 5, 6, 1, 2, 3]))
+    assert_true(all(merged[1] == [7, 8, 9]))
+
+
 def test_rasterize():
     xy = list(toelis.rasterize(data1))
     assert_equal(len(xy), toelis.count(data1))
