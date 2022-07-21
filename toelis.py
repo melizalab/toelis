@@ -20,7 +20,7 @@ Licensed for use under GNU Public License v2.0
 
 """
 
-__version__ = "2.1.0"
+__version__ = "2.1.1"
 
 # format:
 # line 1 - number of units (nunits)
@@ -36,6 +36,7 @@ def read(fp):
 
     """
     from numpy import fromiter
+
     try:
         from __builtin__ import range
     except ImportError:
@@ -49,15 +50,17 @@ def read(fp):
     n_repeats = int(next(lines))
 
     # use this information to check for consistency
-    p_units = fromiter(lines, 'i', n_units)
+    p_units = fromiter(lines, "i", n_units)
     pos = 2 + n_units + 1
 
     for unit in range(n_units):
         if pos != p_units[unit]:
-            raise IOError("Corrupted header in %s: unit %d should start on %d" %
-                          (file, unit, p_units[unit]))
-        n_events = fromiter(lines, 'i', n_repeats)
-        events = [fromiter(lines, 'd', n) for n in n_events]
+            raise IOError(
+                "Corrupted header in %s: unit %d should start on %d"
+                % (file, unit, p_units[unit])
+            )
+        n_events = fromiter(lines, "i", n_repeats)
+        events = [fromiter(lines, "d", n) for n in n_events]
         out.append(events)
         pos += sum(n_events) + n_repeats
 
@@ -76,13 +79,14 @@ def write(fp, *data):
 
     """
     from itertools import chain
+
     output = []
     header = []
     ntrials = None
 
     header.append(len(data))  # number of units
 
-    ptr = 3 + len(data)       # first data entry
+    ptr = 3 + len(data)  # first data entry
     for unit in data:
         if ntrials is None:
             ntrials = len(unit)
@@ -94,7 +98,7 @@ def write(fp, *data):
         for trial in unit:
             output.extend(trial)
 
-    for val in chain(header,output):
+    for val in chain(header, output):
         fp.write("%r\n" % val)
 
 
@@ -146,6 +150,7 @@ def merge(*x):
     except ImportError:
         from itertools import zip_longest
     from numpy import concatenate
+
     return (concatenate(y) for y in zip_longest(*x, fillvalue=[]))
 
 

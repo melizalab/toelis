@@ -241,37 +241,39 @@ class TestToelis(unittest.TestCase):
         self.assertEqual(toelis.count(self.data2), 98, "Number of events")
         self.assertEqual(toelis.count(self.data1 + self.data2), 86 + 98)
 
-
     def test_range(self):
         self.assertEqual(toelis.range(self.data1), (-1813.94999695, 12782.9501953))
         self.assertEqual(toelis.range(self.data2), (-977.15002441399997, 11242.2001953))
-        self.assertEqual(toelis.range(self.data1 + self.data2), (-1813.94999695, 12782.9501953))
-
+        self.assertEqual(
+            toelis.range(self.data1 + self.data2), (-1813.94999695, 12782.9501953)
+        )
 
     def test_offset(self):
-        self.assertEqual(toelis.range(list(toelis.offset(self.data1, 1000))),
-                     (-2813.9499969500002, 11782.9501953))
+        self.assertEqual(
+            toelis.range(list(toelis.offset(self.data1, 1000))),
+            (-2813.9499969500002, 11782.9501953),
+        )
 
     def test_merge(self):
         merged = list(toelis.merge(self.data1, self.data2))
-        self.assertEqual(toelis.count(merged), toelis.count(self.data1) + toelis.count(self.data2))
+        self.assertEqual(
+            toelis.count(merged), toelis.count(self.data1) + toelis.count(self.data2)
+        )
         self.assertEqual(toelis.range(merged), (-1813.94999695, 12782.9501953))
-
 
     def test_merge_unequal_length(self):
         from numpy import array
-        a = (array([4,5,6]), array([7,8,9]))
-        b = (array([1,2,3]),)
+
+        a = (array([4, 5, 6]), array([7, 8, 9]))
+        b = (array([1, 2, 3]),)
         merged = list(toelis.merge(a, b))
         self.assertTrue(all(merged[0] == [4, 5, 6, 1, 2, 3]))
         self.assertTrue(all(merged[1] == [7, 8, 9]))
-
 
     def test_rasterize(self):
         xy = list(toelis.rasterize(self.data1))
         self.assertEqual(len(xy), toelis.count(self.data1))
         self.assertEqual(max(x[0] for x in xy), len(self.data1) - 1)
-
 
     def test_write(self):
         # because of precision issues, do a read/write
