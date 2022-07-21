@@ -11,13 +11,16 @@ This module takes a dynamic, functional approach; functions do not modify their
 arguments and are fairly generic. Some functions may require the component
 arrays to support broadcasting. Functions return generators when possible.
 
-File format originally developed by Amish Dave.
+The module also reads and writes the "toe_lis" file format, which was originally
+developed by Amish Dave. We recommend using
+[pprox](https://meliza.org/spec:2/pprox/) going forward.
+
 Copyright (C) Dan Meliza, 2006-2013 (dmeliza@uchicago.edu)
 Licensed for use under GNU Public License v2.0
 
 """
 
-__version__ = "2.0.1"
+__version__ = "2.1.0"
 
 # format:
 # line 1 - number of units (nunits)
