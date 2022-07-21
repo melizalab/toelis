@@ -45,7 +45,7 @@ def read(fp):
     out = []
     # all lines are parsed as floats first because some very old toelis
     # files have counts stored as floats
-    lines = (float(l) for l in fp)
+    lines = (float(line) for line in fp)
     n_units = int(next(lines))
     n_repeats = int(next(lines))
 
@@ -57,7 +57,7 @@ def read(fp):
         if pos != p_units[unit]:
             raise IOError(
                 "Corrupted header in %s: unit %d should start on %d"
-                % (file, unit, p_units[unit])
+                % (fp.name, unit, p_units[unit])
             )
         n_events = fromiter(lines, "i", n_repeats)
         events = [fromiter(lines, "d", n) for n in n_events]
