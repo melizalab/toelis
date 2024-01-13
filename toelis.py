@@ -114,7 +114,7 @@ def count(x: RaggedArray) -> int:
     return sum(len(y) for y in x)
 
 
-def range(x: RaggedArray) -> tuple[Optional[Number], Optional[Number]]:
+def range(x: RaggedArray) -> Tuple[Optional[Number], Optional[Number]]:
     """Returns the minimum and maximum values in a ragged array y.
 
     Note: If any of the trials is empty, returns (None, None). This behavior
