@@ -66,7 +66,7 @@ number of trials.
 python module
 -------------
 
-The toelis module requires Python 2.6+ or 3.2+ and numpy 1.3+. To
+The toelis module requires Python 3.7+ and numpy 1.19+. To
 install:
 
 .. code:: bash
@@ -105,18 +105,4 @@ Chicago (http://margoliashlab.uchicago.edu). The formalized ABNF grammar
 and python implementation were written by Dan Meliza
 (http://meliza.org).
 
-Copyright (c) 2006-2012 C Daniel Meliza. See COPYING for license
-information.
-
-This Specification and Implementation are distributed in the hope that
-it will be useful, but WITHOUT ANY WARRANTY; without even the implied
-warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License along
-with this program; if not, see http://www.gnu.org/licenses.
-
-|Build Status|
-
-.. |Build Status| image:: https://travis-ci.org/melizalab/toelis.png?branch=develop
-   :target: https://travis-ci.org/melizalab/toelis
+See COPYING for license information.
