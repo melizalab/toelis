@@ -163,7 +163,7 @@ def merge(*x: RaggedNdArray) -> Iterator[np.ndarray]:
     return (concatenate(y) for y in zip_longest(*x, fillvalue=[]))
 
 
-def rasterize(x: RaggedArray) -> Iterator[tuple[int, Number]]:
+def rasterize(x: RaggedArray) -> Iterator[Tuple[int, Number]]:
     """Rasterize the ragged array x as a lazy sequence of (x, y)
 
     The y values of each tuple are the values in the arrays, and the x values
