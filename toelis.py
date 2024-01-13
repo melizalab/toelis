@@ -19,7 +19,7 @@ Licensed for use under GNU Public License v2.0
 
 """
 from numbers import Number
-from typing import Iterator, Optional, Sequence, TextIO
+from typing import Iterator, Optional, Sequence, TextIO, Tuple
 
 import numpy as np
 
@@ -36,7 +36,7 @@ __version__ = "2.1.2"
 # and scan in nreps lines, which give the number of events per repeat.
 
 
-def read(fp: TextIO) -> tuple[np.ndarray, ...]:
+def read(fp: TextIO) -> Tuple[np.ndarray, ...]:
     """Parses fp as a toe_lis file and returns a tuple of ragged
     arrays, one for each element in the file.
 
