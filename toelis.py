@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # -*- mode: python -*-
 """Read, write, and process time-of-event data.
 
@@ -19,8 +18,15 @@ Copyright (C) Dan Meliza, 2006-2013 (dmeliza@uchicago.edu)
 Licensed for use under GNU Public License v2.0
 
 """
+from numbers import Number
+from typing import Iterator, Optional, Sequence, TextIO
 
-__version__ = "2.1.1"
+import numpy as np
+
+RaggedArray = Sequence[Sequence[Number]]
+RaggedNdArray = Sequence[np.ndarray]
+
+__version__ = "2.1.2"
 
 # format:
 # line 1 - number of units (nunits)
@@ -30,13 +36,14 @@ __version__ = "2.1.1"
 # and scan in nreps lines, which give the number of events per repeat.
 
 
-def read(fp):
-    """Parses fp (a file object) as a toe_lis file and returns a tuple of ragged
+def read(fp: TextIO) -> tuple[np.ndarray, ...]:
+    """Parses fp as a toe_lis file and returns a tuple of ragged
     arrays, one for each element in the file.
 
     """
     from numpy import fromiter
 
+    # otherwise this would use the range function defined later
     try:
         from __builtin__ import range
     except ImportError:
@@ -55,7 +62,7 @@ def read(fp):
 
     for unit in range(n_units):
         if pos != p_units[unit]:
-            raise IOError(
+            raise OSError(
                 "Corrupted header in %s: unit %d should start on %d"
                 % (fp.name, unit, p_units[unit])
             )
@@ -67,7 +74,7 @@ def read(fp):
     return tuple(out)
 
 
-def write(fp, *data):
+def write(fp: TextIO, *data: Sequence[Number]) -> None:
     """Writes time of event data to fp (a file object) in toe_lis format.
 
     The data arguments must each be a ragged array containing event times. The
@@ -102,14 +109,16 @@ def write(fp, *data):
         fp.write("%r\n" % val)
 
 
-def count(x):
+def count(x: RaggedArray) -> int:
     """Returns the number of events in a ragged array x"""
     return sum(len(y) for y in x)
 
 
-def range(x):
-    """Returns the minimum and maximum values in a ragged array y. If the number
-    of events is zero, returns (None, None)
+def range(x: RaggedArray) -> tuple[Optional[Number], Optional[Number]]:
+    """Returns the minimum and maximum values in a ragged array y.
+
+    Note: If any of the trials is empty, returns (None, None). This behavior
+    will probably change in future versions.
 
     """
     try:
@@ -118,7 +127,7 @@ def range(x):
         return (None, None)
 
 
-def offset(x, val):
+def offset(x: RaggedNdArray, val: Number) -> Iterator[np.ndarray]:
     """Returns a lazy copy of x with val subtracted from every value.
 
     Component arrays must support broadcasting.
@@ -127,7 +136,7 @@ def offset(x, val):
     return (y - val for y in x)
 
 
-def subrange(x, onset=None, offset=None):
+def subrange(x: RaggedNdArray, onset: Number, offset: Number) -> Iterator[np.ndarray]:
     """Returns a lazy copy of x with values between onset and offset (inclusive).
 
     Component arrays must support broadcasting.
@@ -136,7 +145,7 @@ def subrange(x, onset=None, offset=None):
     return (y[(y >= onset) & ~(y > (offset))] for y in x)
 
 
-def merge(*x):
+def merge(*x: RaggedNdArray) -> Iterator[np.ndarray]:
     """Returns a new lazy ragged array with events in corresponding
     elements of x and y merged. Returned arrays are not sorted.
 
@@ -154,7 +163,7 @@ def merge(*x):
     return (concatenate(y) for y in zip_longest(*x, fillvalue=[]))
 
 
-def rasterize(x):
+def rasterize(x: RaggedArray) -> Iterator[tuple[int, Number]]:
     """Rasterize the ragged array x as a lazy sequence of (x, y)
 
     The y values of each tuple are the values in the arrays, and the x values

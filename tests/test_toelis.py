@@ -1,8 +1,8 @@
-# -*- coding: utf-8 -*-
 # -*- mode: python -*-
 from io import StringIO
 
 import pytest
+
 import toelis
 
 toe1 = """\
@@ -250,6 +250,21 @@ def test_range(test_data1, test_data2):
     assert toelis.range(test_data1) == (-1813.94999695, 12782.9501953)
     assert toelis.range(test_data2) == (-977.15002441399997, 11242.2001953)
     assert toelis.range(test_data1 + test_data2) == (-1813.94999695, 12782.9501953)
+
+
+def test_subrange(test_data1):
+    min_t, max_t = (0, 10000)
+    subrange = tuple(toelis.subrange(test_data1, min_t, max_t))
+    subrange_range = toelis.range(subrange)
+    assert subrange_range[0] >= min_t
+    assert subrange_range[1] <= max_t
+    assert toelis.count(subrange) == 40
+
+
+def test_subrange_swapped_inputs(test_data1):
+    min_t, max_t = (10000, 0)
+    subrange = tuple(toelis.subrange(test_data1, min_t, max_t))
+    assert toelis.count(subrange) == 0
 
 
 def test_offset(test_data1):
