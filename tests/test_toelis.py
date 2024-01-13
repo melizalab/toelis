@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 # -*- mode: python -*-
-
-import unittest
 from io import StringIO
 
+import pytest
 import toelis
 
 toe1 = """\
@@ -223,71 +222,78 @@ toe2 = """\
 """
 
 
-class TestToelis(unittest.TestCase):
-    def setUp(self):
-        data1 = toelis.read(StringIO(toe1))
-        data2 = toelis.read(StringIO(toe2))
-        self.assertEqual(len(data1), 1)
-        self.assertEqual(len(data2), 1)
-        self.data1 = data1[0]
-        self.data2 = data2[0]
+@pytest.fixture
+def test_data1():
+    data1 = toelis.read(StringIO(toe1))
+    assert len(data1) == 1
+    return data1[0]
 
-    def test_parsing(self):
-        self.assertEqual(len(self.data1), 10)
-        self.assertEqual(len(self.data2), 10)
 
-    def test_count(self):
-        self.assertEqual(toelis.count(self.data1), 86, "Number of events")
-        self.assertEqual(toelis.count(self.data2), 98, "Number of events")
-        self.assertEqual(toelis.count(self.data1 + self.data2), 86 + 98)
+@pytest.fixture
+def test_data2():
+    data2 = toelis.read(StringIO(toe2))
+    assert len(data2) == 1
+    return data2[0]
 
-    def test_range(self):
-        self.assertEqual(toelis.range(self.data1), (-1813.94999695, 12782.9501953))
-        self.assertEqual(toelis.range(self.data2), (-977.15002441399997, 11242.2001953))
-        self.assertEqual(
-            toelis.range(self.data1 + self.data2), (-1813.94999695, 12782.9501953)
-        )
 
-    def test_offset(self):
-        self.assertEqual(
-            toelis.range(list(toelis.offset(self.data1, 1000))),
-            (-2813.9499969500002, 11782.9501953),
-        )
+def test_parsing(test_data1, test_data2):
+    assert len(test_data1) == 10
+    assert len(test_data2) == 10
 
-    def test_merge(self):
-        merged = list(toelis.merge(self.data1, self.data2))
-        self.assertEqual(
-            toelis.count(merged), toelis.count(self.data1) + toelis.count(self.data2)
-        )
-        self.assertEqual(toelis.range(merged), (-1813.94999695, 12782.9501953))
 
-    def test_merge_unequal_length(self):
-        from numpy import array
+def test_count(test_data1, test_data2):
+    assert toelis.count(test_data1) == 86, "Number of events"
+    assert toelis.count(test_data2) == 98, "Number of events"
 
-        a = (array([4, 5, 6]), array([7, 8, 9]))
-        b = (array([1, 2, 3]),)
-        merged = list(toelis.merge(a, b))
-        self.assertTrue(all(merged[0] == [4, 5, 6, 1, 2, 3]))
-        self.assertTrue(all(merged[1] == [7, 8, 9]))
 
-    def test_rasterize(self):
-        xy = list(toelis.rasterize(self.data1))
-        self.assertEqual(len(xy), toelis.count(self.data1))
-        self.assertEqual(max(x[0] for x in xy), len(self.data1) - 1)
+def test_range(test_data1, test_data2):
+    assert toelis.range(test_data1) == (-1813.94999695, 12782.9501953)
+    assert toelis.range(test_data2) == (-977.15002441399997, 11242.2001953)
+    assert toelis.range(test_data1 + test_data2) == (-1813.94999695, 12782.9501953)
 
-    def test_write(self):
-        # because of precision issues, do a read/write
-        fp = StringIO()
-        toelis.write(fp, self.data1)
 
-        fp2 = StringIO(fp.getvalue())
-        d = toelis.read(fp2)
-        self.assertEqual(len(d), 1)
-        d = d[0]
-        self.assertEqual(len(d), len(self.data1))
-        self.assertEqual(toelis.count(d), toelis.count(self.data1))
-        self.assertEqual(toelis.range(d), toelis.range(self.data1))
-        self.assertTrue(all(all(x == y) for x, y in zip(d, self.data1)))
+def test_offset(test_data1):
+    assert toelis.range(list(toelis.offset(test_data1, 1000))) == (
+        -2813.9499969500002,
+        11782.9501953,
+    )
+
+
+def test_merge(test_data1, test_data2):
+    merged = list(toelis.merge(test_data1, test_data2))
+    assert toelis.count(merged) == toelis.count(test_data1) + toelis.count(test_data2)
+    assert toelis.range(merged) == (-1813.94999695, 12782.9501953)
+
+
+def test_merge_unequal_length():
+    from numpy import array
+
+    a = (array([4, 5, 6]), array([7, 8, 9]))
+    b = (array([1, 2, 3]),)
+    merged = list(toelis.merge(a, b))
+    assert all(merged[0] == [4, 5, 6, 1, 2, 3])
+    assert all(merged[1] == [7, 8, 9])
+
+
+def test_rasterize(test_data1):
+    xy = list(toelis.rasterize(test_data1))
+    assert len(xy) == toelis.count(test_data1)
+    assert max(x[0] for x in xy) == len(test_data1) - 1
+
+
+def test_write(test_data1):
+    # because of precision issues, do a read/write
+    fp = StringIO()
+    toelis.write(fp, test_data1)
+
+    fp2 = StringIO(fp.getvalue())
+    d = toelis.read(fp2)
+    assert len(d) == 1
+    d = d[0]
+    assert len(d) == len(test_data1)
+    assert toelis.count(d) == toelis.count(test_data1)
+    assert toelis.range(d) == toelis.range(test_data1)
+    assert all(all(x == y) for x, y in zip(d, test_data1))
 
 
 # Variables:
