@@ -26,7 +26,7 @@ import numpy as np
 RaggedArray = Sequence[Sequence[Number]]
 RaggedNdArray = Sequence[np.ndarray]
 
-__version__ = "2.1.3"
+__version__ = "2.1.4"
 
 # format:
 # line 1 - number of units (nunits)
