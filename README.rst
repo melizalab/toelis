@@ -66,8 +66,8 @@ number of trials.
 python module
 -------------
 
-The toelis module requires Python 3.7+ and numpy 1.19+. To
-install:
+The toelis module requires numpy 1.19+ and has been tested on CPython 3.7-3.12
+and PyPy 3.7-3.10. To install:
 
 .. code:: bash
 
