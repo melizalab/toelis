@@ -106,7 +106,7 @@ def write(fp: TextIO, *data: Sequence[Number]) -> None:
             output.extend(trial)
 
     for val in chain(header, output):
-        fp.write("%r\n" % val)
+        fp.write(f"{val}\n")
 
 
 def count(x: RaggedArray) -> int:
