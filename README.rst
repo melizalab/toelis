@@ -66,8 +66,8 @@ number of trials.
 python module
 -------------
 
-The toelis module requires numpy 1.19+ and has been tested on CPython 3.7-3.12
-and PyPy 3.7-3.10. To install:
+The toelis module requires numpy 1.19+ and has been tested on CPython 3.11-3.14
+and PyPy 3.11. To install:
 
 .. code:: bash
 
@@ -77,7 +77,7 @@ Or to install from source:
 
 .. code:: bash
 
-   python setup.py install
+   pip install .
 
 The module contains functions for reading and writing toelis files, as
 well as for manipulating toelis data, which are represented as lists of

@@ -1,8 +1,61 @@
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "toelis"
+dynamic = ["version"]
+description = "Time of Event data and file format"
+readme = "README.rst"
+requires-python = ">=3.11"
+license = "BSD-3-Clause"
+license-files = ["COPYING"]
+authors = [{ name = "Dan Meliza", email = "dan@meliza.org" }]
+maintainers = [{ name = "Dan Meliza", email = "dan@meliza.org" }]
+keywords = ["neuroscience", "point process", "data format"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    "Topic :: Scientific/Engineering",
+    "Operating System :: Unix",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: Microsoft :: Windows",
+    "Natural Language :: English",
+]
+dependencies = ["numpy>=1.19.5"]
+
+[project.urls]
+Homepage = "https://github.com/melizalab/toelis"
+
+[dependency-groups]
+test = ["pytest>=7.0"]
+dev = [{ include-group = "test" }, "ruff"]
+
+[tool.uv]
+default-groups = ["dev"]
+
+[tool.hatch.version]
+path = "toelis.py"
+
+[tool.hatch.build.targets.sdist]
+include = ["/toelis.py", "/tests", "/README.rst", "/COPYING"]
+
+[tool.hatch.build.targets.wheel]
+include = ["/toelis.py"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
 
 [tool.ruff]
-target-version = "py37"
+target-version = "py311"
 
 [tool.ruff.lint]
 extend-select = [
