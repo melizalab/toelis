@@ -52,10 +52,14 @@ include = ["/toelis.py"]
 testpaths = ["tests"]
 
 [tool.ruff]
+line-length = 120
 target-version = "py311"
 
 [tool.ruff.lint]
 extend-select = [
+  "E",  # pycodestyle errors
+  "W",  # pycodestyle warnings
+  "F",  # pyflakes
   "B",   # flake8-bugbear
   "I",   # isort
   "PGH", # pygrep-hooks

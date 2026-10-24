@@ -63,9 +63,7 @@ def read(fp: TextIO) -> tuple[np.ndarray, ...]:
     # not the builtin: this module defines its own range function
     for unit in builtins.range(n_units):
         if pos != p_units[unit]:
-            raise OSError(
-                f"Corrupted header in {fp.name}: unit {unit} should start on {p_units[unit]}"
-            )
+            raise OSError(f"Corrupted header in {fp.name}: unit {unit} should start on {p_units[unit]}")
         n_events = np.fromiter(lines, "i", n_repeats)
         events = [np.fromiter(lines, "d", n) for n in n_events]
         out.append(events)
