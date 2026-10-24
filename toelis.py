@@ -13,8 +13,8 @@ The module also reads and writes the "toe_lis" file format, which was originally
 developed by Amish Dave. We recommend using
 [pprox](https://meliza.org/spec:2/pprox/) going forward.
 
-Copyright (C) Dan Meliza, 2006-2013 (dmeliza@uchicago.edu)
-Licensed for use under GNU Public License v2.0
+Copyright (C) Dan Meliza, 2006-2026 (cdm8j@virginia.edu)
+Licensed for use under the GNU General Public License, version 2 or later
 
 """
 
