@@ -13,13 +13,14 @@ The module also reads and writes the "toe_lis" file format, which was originally
 developed by Amish Dave. We recommend using
 [pprox](https://meliza.org/spec:2/pprox/) going forward.
 
-Copyright (C) Dan Meliza, 2006-2026 (cdm8j@virginia.edu)
+Copyright (C) Dan Meliza, 2006-2026 (dan@meliza.org)
 Licensed for use under the GNU General Public License, version 2 or later
 
 """
 
 import builtins
 from collections.abc import Iterator, Sequence
+from importlib.metadata import PackageNotFoundError, version
 from itertools import chain, zip_longest
 from numbers import Number
 from typing import TextIO
@@ -29,7 +30,11 @@ import numpy as np
 RaggedArray = Sequence[Sequence[Number]]
 RaggedNdArray = Sequence[np.ndarray]
 
-__version__ = "2.1.4"
+try:
+    __version__ = version("toelis")
+except PackageNotFoundError:
+    # package is not installed (e.g., running from a source checkout)
+    __version__ = "unknown"
 
 # format:
 # line 1 - number of units (nunits)
