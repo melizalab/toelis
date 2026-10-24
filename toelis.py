@@ -18,8 +18,10 @@ Copyright (C) Dan Meliza, 2006-2013 (dmeliza@uchicago.edu)
 Licensed for use under GNU Public License v2.0
 
 """
+
+from collections.abc import Iterator, Sequence
 from numbers import Number
-from typing import Iterator, Optional, Sequence, TextIO, Tuple
+from typing import TextIO
 
 import numpy as np
 
@@ -36,7 +38,7 @@ __version__ = "2.1.4"
 # and scan in nreps lines, which give the number of events per repeat.
 
 
-def read(fp: TextIO) -> Tuple[np.ndarray, ...]:
+def read(fp: TextIO) -> tuple[np.ndarray, ...]:
     """Parses fp as a toe_lis file and returns a tuple of ragged
     arrays, one for each element in the file.
 
@@ -63,8 +65,7 @@ def read(fp: TextIO) -> Tuple[np.ndarray, ...]:
     for unit in range(n_units):
         if pos != p_units[unit]:
             raise OSError(
-                "Corrupted header in %s: unit %d should start on %d"
-                % (fp.name, unit, p_units[unit])
+                f"Corrupted header in {fp.name}: unit {unit} should start on {p_units[unit]}"
             )
         n_events = fromiter(lines, "i", n_repeats)
         events = [fromiter(lines, "d", n) for n in n_events]
@@ -105,8 +106,7 @@ def write(fp: TextIO, *data: Sequence[Number]) -> None:
         for trial in unit:
             output.extend(trial)
 
-    for val in chain(header, output):
-        fp.write(f"{val}\n")
+    fp.writelines(f"{val}\n" for val in chain(header, output))
 
 
 def count(x: RaggedArray) -> int:
@@ -114,7 +114,7 @@ def count(x: RaggedArray) -> int:
     return sum(len(y) for y in x)
 
 
-def range(x: RaggedArray) -> Tuple[Optional[Number], Optional[Number]]:
+def range(x: RaggedArray) -> tuple[Number | None, Number | None]:
     """Returns the minimum and maximum values in a ragged array y.
 
     Note: If any of the trials is empty, returns (None, None). This behavior
@@ -163,7 +163,7 @@ def merge(*x: RaggedNdArray) -> Iterator[np.ndarray]:
     return (concatenate(y) for y in zip_longest(*x, fillvalue=[]))
 
 
-def rasterize(x: RaggedArray) -> Iterator[Tuple[int, Number]]:
+def rasterize(x: RaggedArray) -> Iterator[tuple[int, Number]]:
     """Rasterize the ragged array x as a lazy sequence of (x, y)
 
     The y values of each tuple are the values in the arrays, and the x values
