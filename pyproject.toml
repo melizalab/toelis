@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "toelis"
-version = "2.1.4"
+version = "2.1.5"
 description = "Time of Event data and file format"
 readme = "README.rst"
 requires-python = ">=3.11"
