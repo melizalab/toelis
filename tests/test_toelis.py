@@ -1,4 +1,3 @@
-# -*- mode: python -*-
 from io import StringIO
 
 import pytest

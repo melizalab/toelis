@@ -92,9 +92,9 @@ programming style allows for compact, expressive syntax:
    import toelis as tl
 
    files = ('file1.toe_lis', 'file2.toe_lis')
-   t_merged = tl.merge(tl.read(open(fname, 'rU'))[0] for fname in files)
-   with open('merged.toe_lis', 'wt') as fp:
-       tl.write(fp, tl.subrange(t_merge, 0, 1000))
+   t_merged = tl.merge(*(tl.read(open(fname))[0] for fname in files))
+   with open('merged.toe_lis', 'w') as fp:
+       tl.write(fp, list(tl.subrange(t_merged, 0, 1000)))
 
 acknowledgments and license
 ---------------------------

@@ -1,4 +1,3 @@
-# -*- mode: python -*-
 """Read, write, and process time-of-event data.
 
 The functions in this module work with time-of-event data represented as ragged
@@ -19,7 +18,9 @@ Licensed for use under GNU Public License v2.0
 
 """
 
+import builtins
 from collections.abc import Iterator, Sequence
+from itertools import chain, zip_longest
 from numbers import Number
 from typing import TextIO
 
@@ -43,14 +44,6 @@ def read(fp: TextIO) -> tuple[np.ndarray, ...]:
     arrays, one for each element in the file.
 
     """
-    from numpy import fromiter
-
-    # otherwise this would use the range function defined later
-    try:
-        from __builtin__ import range
-    except ImportError:
-        from builtins import range
-
     out = []
     # all lines are parsed as floats first because some very old toelis
     # files have counts stored as floats
@@ -59,16 +52,17 @@ def read(fp: TextIO) -> tuple[np.ndarray, ...]:
     n_repeats = int(next(lines))
 
     # use this information to check for consistency
-    p_units = fromiter(lines, "i", n_units)
+    p_units = np.fromiter(lines, "i", n_units)
     pos = 2 + n_units + 1
 
-    for unit in range(n_units):
+    # not the builtin: this module defines its own range function
+    for unit in builtins.range(n_units):
         if pos != p_units[unit]:
             raise OSError(
                 f"Corrupted header in {fp.name}: unit {unit} should start on {p_units[unit]}"
             )
-        n_events = fromiter(lines, "i", n_repeats)
-        events = [fromiter(lines, "d", n) for n in n_events]
+        n_events = np.fromiter(lines, "i", n_repeats)
+        events = [np.fromiter(lines, "d", n) for n in n_events]
         out.append(events)
         pos += sum(n_events) + n_repeats
 
@@ -86,8 +80,6 @@ def write(fp: TextIO, *data: Sequence[Number]) -> None:
     same number of trials.
 
     """
-    from itertools import chain
-
     output = []
     header = []
     ntrials = None
@@ -154,13 +146,7 @@ def merge(*x: RaggedNdArray) -> Iterator[np.ndarray]:
     >>> list(merge(a, b)) -> [array([4, 5, 6, 1, 2, 3]), array([7, 8, 9])]
 
     """
-    try:
-        from itertools import izip_longest as zip_longest
-    except ImportError:
-        from itertools import zip_longest
-    from numpy import concatenate
-
-    return (concatenate(y) for y in zip_longest(*x, fillvalue=[]))
+    return (np.concatenate(y) for y in zip_longest(*x, fillvalue=[]))
 
 
 def rasterize(x: RaggedArray) -> Iterator[tuple[int, Number]]:
@@ -173,7 +159,3 @@ def rasterize(x: RaggedArray) -> Iterator[tuple[int, Number]]:
     for i, y in enumerate(x):
         for v in y:
             yield i, v
-
-
-# Variables:
-# End:
