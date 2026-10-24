@@ -23,7 +23,7 @@ toelis
 consisting of a series of events occurring at discrete times. Each event
 is associated with a specific *channel* (i.e. source), and *trial*
 (i.e. presentation of a stimulus or set of experimental conditions), and
-is defined by a positive or negative temporal from a defined reference
+is defined by a positive or negative temporal offset from a defined reference
 time. This project (1) defines a file format for storing toelis data in
 plain text files (original developed by Amish Dave), and (2) contains a
 Python module with data structures for storing toelis data and functions
@@ -40,17 +40,18 @@ the format specified by the following
 
    toelis-file   = num-channels NL num-trials NL *channel-index *channel
    num-channels  = 1*DIGIT
-   num-reps      = 1*DIGIT
+   num-trials    = 1*DIGIT
    channel-index = 1*DIGIT NL           ; starting line for each channel
                                         ; number of channel-index items must equal num-channels
    channel       = event-counts events
-   event-counts  = *(1*DIGIT NL)        ; number of events in each repetition
-                                        ; number of event-count lines must equal num-reps
+   event-counts  = *(1*DIGIT NL)        ; number of events in each trial
+                                        ; number of event-count lines must equal num-trials
    events        = *(time NL)
-   time          = [%x1D] 1*DIGIT [%x1E *DIGIT] ; floating point number
-   NL            = CR / CRLF / LF       ; all file encodings accepted
+   time          = [%x2D] 1*DIGIT [%x2E *DIGIT] [exponent] ; floating point number
+   exponent      = (%x45 / %x65) [%x2B / %x2D] 1*DIGIT
+   NL            = CRLF / CR / LF       ; all line-ending conventions accepted
 
-The ``time`` elements indicate a positive or temporal interval from an
+The ``time`` elements indicate a positive or negative temporal interval from an
 externally defined reference time (e.g., the onset of a stimulus), and
 should be in units of milliseconds.
 
