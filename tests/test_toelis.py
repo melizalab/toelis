@@ -246,6 +246,12 @@ def test_parsing_corrupt_header():
         toelis.read(StringIO("1\n2\n9\n1\n1\n5.0\n6.0\n"))
 
 
+@pytest.mark.parametrize("contents", ["", "1\n"])
+def test_parsing_incomplete_header(contents):
+    with pytest.raises(OSError, match="Incomplete header in <stream>"):
+        toelis.read(StringIO(contents))
+
+
 def test_count(test_data1, test_data2):
     assert toelis.count(test_data1) == 86, "Number of events"
     assert toelis.count(test_data2) == 98, "Number of events"

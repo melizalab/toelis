@@ -53,8 +53,12 @@ def read(fp: TextIO) -> tuple[np.ndarray, ...]:
     # all lines are parsed as floats first because some very old toelis
     # files have counts stored as floats
     lines = (float(line) for line in fp)
-    n_units = int(next(lines))
-    n_repeats = int(next(lines))
+    try:
+        n_units = int(next(lines))
+        n_repeats = int(next(lines))
+    except StopIteration:
+        name = getattr(fp, "name", "<stream>")
+        raise OSError(f"Incomplete header in {name}: expected unit and repeat counts") from None
 
     # use this information to check for consistency
     p_units = np.fromiter(lines, "i", n_units)
