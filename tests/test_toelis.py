@@ -240,6 +240,12 @@ def test_parsing(test_data1, test_data2):
     assert len(test_data2) == 10
 
 
+def test_parsing_corrupt_header():
+    # unit 0 should start on line 4, not 9
+    with pytest.raises(OSError, match="Corrupted header in <stream>: unit 0 should start on 9"):
+        toelis.read(StringIO("1\n2\n9\n1\n1\n5.0\n6.0\n"))
+
+
 def test_count(test_data1, test_data2):
     assert toelis.count(test_data1) == 86, "Number of events"
     assert toelis.count(test_data2) == 98, "Number of events"
