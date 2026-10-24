@@ -301,6 +301,19 @@ def test_merge_unequal_length():
     assert all(merged[1] == [7, 8, 9])
 
 
+def test_merge_three_arguments():
+    from numpy import array
+
+    a = (array([1, 2]), array([3]), array([4, 5]))
+    b = (array([6]),)
+    c = (array([7, 8]), array([9]))
+    merged = list(toelis.merge(a, b, c))
+    assert len(merged) == 3
+    assert all(merged[0] == [1, 2, 6, 7, 8])
+    assert all(merged[1] == [3, 9])
+    assert all(merged[2] == [4, 5])
+
+
 def test_rasterize(test_data1):
     xy = list(toelis.rasterize(test_data1))
     assert len(xy) == toelis.count(test_data1)

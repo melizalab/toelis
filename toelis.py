@@ -153,7 +153,10 @@ def subrange(x: RaggedNdArray, onset: Number, offset: Number) -> Iterator[np.nda
 
 def merge(*x: RaggedNdArray) -> Iterator[np.ndarray]:
     """Returns a new lazy ragged array with events in corresponding
-    elements of x and y merged. Returned arrays are not sorted.
+    elements of the arguments merged. Returned arrays are not sorted.
+
+    Any number of ragged arrays can be supplied. If they differ in length,
+    the shorter ones are treated as if padded with empty trials.
 
     >>> a = [[4,5,6], [7,8,9]]
     >>> b = [[1,2,3]]
