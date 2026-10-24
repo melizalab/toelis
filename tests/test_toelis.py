@@ -322,5 +322,17 @@ def test_write(test_data1):
     assert all(all(x == y) for x, y in zip(d, test_data1, strict=True))
 
 
+def test_write_no_units():
+    fp = StringIO()
+    with pytest.raises(ValueError, match="At least one unit"):
+        toelis.write(fp)
+    assert fp.getvalue() == ""
+
+
+def test_write_unequal_repeats():
+    with pytest.raises(ValueError, match="same number of repeats"):
+        toelis.write(StringIO(), [[1.0]], [[1.0], [2.0]])
+
+
 # Variables:
 # End:

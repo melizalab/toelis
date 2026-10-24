@@ -87,7 +87,13 @@ def write(fp: TextIO, *data: Sequence[Number]) -> None:
     different 'unit' in the toe_lis file; however, each object must have the
     same number of trials.
 
+    Raises ValueError if no data are supplied, because toe_lis files must
+    contain at least one unit.
+
     """
+    if not data:
+        raise ValueError("At least one unit is required")
+
     output = []
     header = []
     ntrials = None
