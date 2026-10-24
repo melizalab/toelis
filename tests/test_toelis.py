@@ -308,7 +308,7 @@ def test_write(test_data1):
     assert len(d) == len(test_data1)
     assert toelis.count(d) == toelis.count(test_data1)
     assert toelis.range(d) == toelis.range(test_data1)
-    assert all(all(x == y) for x, y in zip(d, test_data1))
+    assert all(all(x == y) for x, y in zip(d, test_data1, strict=True))
 
 
 # Variables:
